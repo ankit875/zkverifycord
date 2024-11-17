@@ -1,0 +1,10 @@
+
+console.log({token: process.env.NEXT_PUBLIC_DISCORD_TOKEN})
+const APP_ID= process.env.NEXT_PUBLIC_APP_ID
+ const PUBLIC_KEY=process.env.NEXT_PUBLIC_PUBLIC_KEY
+ const BASE_URL=process.env.NEXT_PUBLIC_BASE_URL
+ const GUILD_ID=process.env.NEXT_PUBLIC_GUILD_ID
+ const NFT_OWNER_ROLE_ID=process.env.NEXT_PUBLIC_OWNER_ROLE_ID
+ const DISCORD_TOKEN= process.env.NEXT_PUBLIC_DISCORD_TOKEN
+
+ module.exports = { APP_ID, PUBLIC_KEY, BASE_URL, GUILD_ID, NFT_OWNER_ROLE_ID, DISCORD_TOKEN };

@@ -4,6 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
 import { useForm } from "react-hook-form";
 import { Button } from "./ui/button";
+import { Balance, Balances } from "@proto-kit/library";
+import { useBalancesStore, useMintFaucet } from "@/lib/stores/balances";
+import { useState } from "react";
+import { client } from "chain";
+import { PublicKey } from "o1js";
 
 export interface FaucetProps {
   wallet?: string;
@@ -19,6 +24,18 @@ export function Faucet({
   loading,
 }: FaucetProps) {
   const form = useForm();
+  // const balances = useBalancesStore();
+  const [destAddress,setDestAddress] = useState("");
+  const balances = client.runtime.resolve("Balances");
+  const mint = useMintFaucet(destAddress);
+  const tokenMint =async () =>{
+   
+
+  }
+  // const getbalance = () =>{
+  //  balances.balances[]
+  // }
+
   return (
     <Card className="w-full p-4">
       <div className="mb-2">
@@ -46,8 +63,39 @@ export function Faucet({
               </FormItem>
             )}
           />
+          <FormField
+            name="Destination"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Destination{" "}
+                  <span className="text-sm text-zinc-500">(Address)</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={wallet ?? "Please connect a wallet first"}
+                    value={destAddress}
+                    onChange={(e)=>{setDestAddress(e.target.value)}}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         </div>
-
+        <Button
+        size={'lg'}
+        type="submit"
+        className="mt-6 w-full"
+        loading={loading}
+        onClick={mint}
+          >Mint Account</Button>
+          {/* <Button
+        size={'lg'}
+        type="submit"
+        className="mt-6 w-full"
+        loading={loading}
+        onClick={()=>onDrip()}
+          >Get Balance</Button> */}
         <Button
           size={"lg"}
           type="submit"
@@ -64,3 +112,5 @@ export function Faucet({
     </Card>
   );
 }
+
+

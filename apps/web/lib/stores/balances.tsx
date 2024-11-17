@@ -3,7 +3,7 @@ import { Client, useClientStore } from "./client";
 import { immer } from "zustand/middleware/immer";
 import { PendingTransaction, UnsignedTransaction } from "@proto-kit/sequencer";
 import { Balance, BalancesKey, TokenId } from "@proto-kit/library";
-import { Provable, PublicKey, UInt64 } from "o1js";
+import { CircuitString, Provable, PublicKey, UInt64 } from "o1js";
 import { useCallback, useEffect } from "react";
 import { useChainStore } from "./chain";
 import { useWalletStore } from "./wallet";
@@ -16,6 +16,8 @@ export interface BalancesState {
   };
   loadBalance: (client: Client, address: string) => Promise<void>;
   faucet: (client: Client, address: string) => Promise<PendingTransaction>;
+  mintToken: (client: Client, address: string) => Promise<PendingTransaction>;
+  checkIfUserOwnsNFT: (client: Client, address: string) => Promise<boolean>;
 }
 
 function isPendingTransaction(
@@ -62,6 +64,32 @@ export const useBalancesStore = create<
       isPendingTransaction(tx.transaction);
       return tx.transaction;
     },
+    async mintToken(client: Client, address: string) {
+      const balances = client.runtime.resolve("Nfts");
+      const sender = PublicKey.fromBase58(address);
+
+      const tx1 = await client.transaction(sender, async () => {
+        await balances.mint(CircuitString.fromString("SomeNFT"), CircuitString.fromString("NFT"), sender);
+      });
+
+      await tx1.sign();
+      await tx1.send();
+
+      isPendingTransaction(tx1.transaction);
+      return tx1.transaction;
+    },
+
+    async checkIfUserOwnsNFT(client: Client, address: string) {
+      // const balances = client.runtime.resolve("Nfts");
+      const sender = PublicKey.fromBase58(address);
+
+      const myNFT = await client.query.runtime.Nfts.nfts.get(sender);
+      if(myNFT?.address.toBase58() === sender.toBase58()) {
+        return true;
+      }
+      return false;
+    },
+    
   })),
 );
 
@@ -85,7 +113,6 @@ export const useFaucet = () => {
 
   return useCallback(async () => {
     if (!client.client || !wallet.wallet) return;
-
     const pendingTransaction = await balances.faucet(
       client.client,
       wallet.wallet,
@@ -94,3 +121,30 @@ export const useFaucet = () => {
     wallet.addPendingTransaction(pendingTransaction);
   }, [client.client, wallet.wallet]);
 };
+
+export const useMintFaucet = (address:string) => {
+  const client = useClientStore();
+  const balances = useBalancesStore();
+  const wallet = useWalletStore();
+  // const sender = PublicKey.fromBase58(address);
+
+
+  return useCallback(async () => {
+    if (!client.client || !address) return;
+   
+    const pendingTransaction = await balances.mintToken (client.client, address);
+
+    wallet.addPendingTransaction(pendingTransaction);
+  }, [client.client, address]);
+};
+
+// export const useVerify = (address:string) => {
+//   const client = useClientStore();
+//   const balances = useBalancesStore();
+
+//   return useCallback(async () => {
+//     if (!client.client || !address) return;
+//     const ownerShip = await balances.checkIfUserOwnsNFT(client.client, address);
+//     return ownerShip;
+//   }, [client.client, address]);
+// }

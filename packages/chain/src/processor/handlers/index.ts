@@ -2,6 +2,7 @@ import { BlockHandler, HandlersRecord } from "@proto-kit/processor";
 import { PrismaClient } from "@prisma/client-processor";
 import { appChain } from "./../utils/app-chain";
 import { handleBalancesAddBalance } from "./transactions/add-balance";
+import { handleMint } from "./transactions/mint";
 
 const handleTransactions: BlockHandler<PrismaClient> = async (
   client,
